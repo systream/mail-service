@@ -1,0 +1,23 @@
+{
+  "name": "systream/mail-service",
+  "authors": [
+    {
+      "name": "Peter Tihanyi",
+      "email": "peter.tihanyi@systream.hu"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Systream\\": "src/",
+      "Tests\\Systream\\": "tests/"
+    }
+  },
+  "require": {
+    "php": ">=5.4.0 || >= 7.0",
+    "phpmailer/phpmailer": "~5.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.5",
+    "guzzle/guzzle": "~3.7"
+  }
+}

@@ -3,7 +3,6 @@
 namespace Systream\Mail\Formatters;
 
 
-
 class TokenFormatter implements MessageFormatterInterface
 {
 	/**

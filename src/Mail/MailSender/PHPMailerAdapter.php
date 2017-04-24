@@ -23,11 +23,13 @@ class PHPMailerAdapter implements MailSenderInterface
 		$this->mailer = $mailer;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function send()
 	{
-		$this->mailer->send();
+		return $this->mailer->send();
 	}
-
 
 	/**
 	 * @param RecipientInterface $recipient

@@ -8,8 +8,10 @@ use Systream\Mail\Recipient\RecipientInterface;
 interface MailSenderInterface
 {
 
+	/**
+	 * @return bool
+	 */
 	public function send();
-
 
 	/**
 	 * @param RecipientInterface $recipient

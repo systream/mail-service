@@ -3,11 +3,14 @@
 namespace Systream\Mail\Formatters;
 
 
+use Systream\Mail\MailQueueItem\MailQueueItemInterface;
+use Systream\Mail\MailTemplate\MailTemplateInterface;
+
 interface MessageFormatterInterface
 {
 	/**
-	 * @param string $body
-	 * @return string
+	 * @param MailTemplateInterface $mailTemplate
+	 * @return MailQueueItemInterface
 	 */
-	public function process($body);
+	public function process(MailTemplateInterface $mailTemplate);
 }

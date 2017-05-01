@@ -34,7 +34,7 @@ class PHPMailerAdapter implements MailSenderInterface
 	/**
 	 * @param RecipientInterface $recipient
 	 */
-	public function addAddress(RecipientInterface $recipient)
+	public function addRecipient(RecipientInterface $recipient)
 	{
 		$this->mailer->addAddress($recipient->getEmail(), $recipient->getName());
 	}

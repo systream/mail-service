@@ -41,4 +41,26 @@ class StringMailTemplate implements MailTemplateInterface
 	{
 		return $this->subject;
 	}
+
+	/**
+	 * @param string $subject
+	 * @return static|MailTemplateInterface
+	 */
+	public function withSubject($subject)
+	{
+		$new = clone $this;
+		$new->subject = $subject;
+		return $new;
+	}
+
+	/**
+	 * @param string $body
+	 * @return static|MailTemplateInterface
+	 */
+	public function withBody($body)
+	{
+		$new = clone $this;
+		$new->template = $body;
+		return $new;
+	}
 }

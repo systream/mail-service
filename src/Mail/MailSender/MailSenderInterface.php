@@ -16,7 +16,7 @@ interface MailSenderInterface
 	/**
 	 * @param RecipientInterface $recipient
 	 */
-	public function addAddress(RecipientInterface $recipient);
+	public function addRecipient(RecipientInterface $recipient);
 
 	/**
 	 * @param string $body

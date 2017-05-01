@@ -3,6 +3,8 @@
 namespace Systream\Mail\Formatters;
 
 
+use Systream\Mail\MailTemplate\MailTemplateInterface;
+
 class TokenFormatter implements MessageFormatterInterface
 {
 	/**
@@ -19,15 +21,21 @@ class TokenFormatter implements MessageFormatterInterface
 	}
 
 	/**
-	 * @param string $body
-	 * @return string
+	 * @param MailTemplateInterface $mailTemplate
+	 * @return MailTemplateInterface
 	 */
-	public function process($body)
+	public function process(MailTemplateInterface $mailTemplate)
 	{
+		$body = $mailTemplate->getTemplate();
+		$subject = $mailTemplate->getSubject();
 		foreach ($this->tokens as $tokenName => $tokenValue) {
 			$body = str_replace('{$' . $tokenName . '}', $tokenValue, $body);
+			$subject = str_replace('{$' . $tokenName . '}', $tokenValue, $subject);
 		}
 
-		return $body;
+		$mailTemplate = $mailTemplate->withBody($body);
+		$mailTemplate = $mailTemplate->withSubject($subject);
+
+		return $mailTemplate;
 	}
 }

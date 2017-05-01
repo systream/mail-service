@@ -5,7 +5,6 @@ namespace Systream;
 
 use Systream\Mail\MailQueueItem\MailQueueItemInterface;
 use Systream\Mail\MailSender\MailSenderInterface;
-use Systream\Mail\MailTemplate\MailTemplateInterface;
 use Systream\Mail\QueueHandler\QueueHandlerInterface;
 
 class Mail
@@ -45,16 +44,15 @@ class Mail
 		}
 		$message = $mailQueueItem->getMessage();
 		foreach ($message->getRecipients() as $recipient) {
-			$this->mailer->addAddress($recipient);
+			$this->mailer->addRecipient($recipient);
 		}
 
 		$mailTemplate = $message->getMailTemplate();
-		$body = $mailTemplate->getTemplate();
 		foreach ($mailQueueItem->getMessageFormatters() as $messageFormatter) {
-			$body = $messageFormatter->process($body);
+			$mailTemplate = $messageFormatter->process($mailTemplate);
 		}
 
-		$this->mailer->setMessage($body);
+		$this->mailer->setMessage($mailTemplate->getTemplate());
 		$this->mailer->setSubject($mailTemplate->getSubject());
 		return $this->mailer->send();
 	}

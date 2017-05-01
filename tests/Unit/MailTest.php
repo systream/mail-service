@@ -2,6 +2,7 @@
 
 namespace Tests\Systream\Unit;
 
+use Psr\Log\LoggerInterface;
 use Systream\Mail;
 use Tests\Systream\TestAbstract;
 
@@ -271,6 +272,118 @@ class MailTest extends TestAbstract
 		$this->assertEmailTextContains('hello test2 foo', $email);
 	}
 
+
+	/**
+	 * @test
+	 */
+	public function log_notYetScheduled()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
+		$message = new Mail\Message($mailTemplate);
+		$message->addRecipient(new Mail\Recipient('test@mail.hu', 'foo bar'));
+		$mailQueueItem = new Mail\MailQueueItem($message, new \DateTime('+10 minutes'));
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('info');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function log_recipientsNotSet()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
+		$message = new Mail\Message($mailTemplate);
+		$mailQueueItem = new Mail\MailQueueItem($message);
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('error');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function log_messageNotSet()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('', 'subject');
+		$message = new Mail\Message($mailTemplate);
+		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
+		$mailQueueItem = new Mail\MailQueueItem($message);
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('error');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function log_subjectNotSet()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', '');
+		$message = new Mail\Message($mailTemplate);
+		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
+		$mailQueueItem = new Mail\MailQueueItem($message);
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('error');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 */
+	public function log_sendSuccessful()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
+		$message = new Mail\Message($mailTemplate);
+		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
+		$mailQueueItem = new Mail\MailQueueItem($message);
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('info');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\SendFailedException
+	 */
+	public function log_failed()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mailer->method('send')->will($this->throwException(new \phpmailerException('fooo')));
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
+		$message = new Mail\Message($mailTemplate);
+		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
+		$mailQueueItem = new Mail\MailQueueItem($message);
+		$logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+		$logger->expects($this->atLeastOnce())->method('critical');
+		$mail->setLogger($logger);
+
+		$mail->send($mailQueueItem);
+	}
 	/**
 	 * @return \PHPMailer
 	 */

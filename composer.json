@@ -6,6 +6,9 @@
       "email": "peter.tihanyi@systream.hu"
     }
   ],
+  "suggest": {
+    "monolog/monolog": "Allows more advanced logging of the application flow"
+  },
   "autoload": {
     "psr-4": {
       "Systream\\": "src/",
@@ -14,10 +17,11 @@
   },
   "require": {
     "php": ">=5.4.0 || >= 7.0",
-    "phpmailer/phpmailer": "~5.2"
+    "phpmailer/phpmailer": "~5.2",
+    "psr/log": "^1.0.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.5",
-    "guzzle/guzzle": "~3.7"
+    "guzzlehttp/guzzle": "~3.7"
   }
 }

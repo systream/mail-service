@@ -29,6 +29,137 @@ class MailTest extends TestAbstract
 		$this->assertEmailRecipientsContain('<foo@bar.hu>', $email);
 		$this->assertEmailSubjectEquals('subject', $email);
 		$this->assertEmailHtmlContains('hello', $email);
+		$this->assertEmailTextContains('hello', $email);
+	}
+
+	/**
+	 * @test
+	 */
+	public function recipients()
+	{
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject',
+			'hello',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$this->assertEquals('foo@bar.hu', $item->getMessage()->getRecipients()[0]->getEmail());
+		$this->assertEquals('Foo Bar', $item->getMessage()->getRecipients()[0]->getName());
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function withoutSubject()
+	{
+		$PHPMailer = $this->getPHPMailer();
+		$mail = $this->getMailer($PHPMailer);
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'',
+			'hello',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$mail->send($item);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function withoutMessage()
+	{
+		$PHPMailer = $this->getPHPMailer();
+		$mail = $this->getMailer($PHPMailer);
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject',
+			'',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$mail->send($item);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\InvalidMessageException
+	 */
+	public function withoutRecipient()
+	{
+		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'Subject');
+		$message = new Mail\Message($mailTemplate);
+		$mailQueueItem = new Mail\MailQueueItem($message);
+
+		$PHPMailer = $this->getPHPMailer();
+		$mail = $this->getMailer($PHPMailer);
+		$mail->send($mailQueueItem);
+	}
+
+	/**
+	 * @test
+	 * @_depends SendTest_factory
+	 */
+	public function sendDouble()
+	{
+		$PHPMailer = $this->getPHPMailer();
+		$mail = $this->getMailer($PHPMailer);
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject',
+			'hello',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$mail->send($item);
+
+		$email = $this->getLastMessage();
+		$this->assertEmailSenderEquals('<test@unit.test>', $email);
+		$this->assertEmailRecipientsContain('<foo@bar.hu>', $email);
+		$this->assertEmailSubjectEquals('subject', $email);
+		$this->assertEmailHtmlContains('hello', $email);
+		$this->assertEmailTextContains('hello', $email);
+
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject 2',
+			'hello 2',
+			'foo2@bar2.hu',
+			'Foo2 Bar2'
+		);
+
+		$this->cleanMessages();
+		$mail->send($item);
+
+		$email = $this->getLastMessage();
+		$this->assertEmailSenderEquals('<test@unit.test>', $email);
+		$this->assertEmailRecipientsContain('<foo2@bar2.hu>', $email);
+		$this->assertCount(1, $email->recipients);
+		$this->assertNotContains('foo@bar.hu', $email->recipients);
+		$this->assertEmailSubjectEquals('subject 2', $email);
+		$this->assertEmailHtmlContains('hello 2', $email);
+		$this->assertEmailTextContains('hello 2', $email);
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Systream\Mail\Exception\SendFailedException
+	 */
+	public function sendFailed()
+	{
+		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mailer->method('send')->will($this->throwException(new \phpmailerException('fooo')));
+		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject',
+			'hello',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$mail->send($item);
 	}
 
 	/**
@@ -50,6 +181,7 @@ class MailTest extends TestAbstract
 
 		$email = $this->getLastMessage();
 		$this->assertEmailHtmlContains('hello test', $email);
+		$this->assertEmailTextContains('hello test', $email);
 	}
 
 	/**
@@ -115,6 +247,28 @@ class MailTest extends TestAbstract
 		$email = $this->getLastMessage();
 		$this->assertEmailSubjectContains('subject {$name}', $email);
 		$this->assertEmailHtmlContains('hello {$name}', $email);
+	}
+
+	/**
+	 * @test
+	 */
+	public function removeHtmlText()
+	{
+		$PHPMailer = $this->getPHPMailer();
+		$mail = $this->getMailer($PHPMailer);
+		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+			'subject {$name}',
+			'<h1>hello {$name}</h1> <p>foo</p>',
+			'foo@bar.hu',
+			'Foo Bar',
+			array('name' => 'test2')
+		);
+
+		$mail->send($item);
+
+		$email = $this->getLastMessage();
+		$this->assertEmailHtmlContains('<h1>hello test2</h1> <p>foo</p>', $email);
+		$this->assertEmailTextContains('hello test2 foo', $email);
 	}
 
 	/**

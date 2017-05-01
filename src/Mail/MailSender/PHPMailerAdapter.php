@@ -54,4 +54,15 @@ class PHPMailerAdapter implements MailSenderInterface
 	{
 		$this->mailer->Subject = $subject;
 	}
+
+	/**
+	 * @return void
+	 */
+	public function reset()
+	{
+		$this->mailer->clearAllRecipients();
+		$this->mailer->clearAddresses();
+		$this->mailer->clearAttachments();
+		$this->mailer->clearCustomHeaders();
+	}
 }

@@ -102,13 +102,14 @@ class Mail
 		$this->mailer->setSubject($subject);
 		try {
 			$return = $this->mailer->send();
-			$this->log('Sent', $mailQueueItem, self::LOG_INFO);
-			return $return;
 		} catch (\Exception $exception) {
 			$message = $exception->getMessage();
 			$this->log('Send failed: ' . $message, $mailQueueItem, self::LOG_CRITICAL);
 			throw new SendFailedException('Send failed: ' . $message, 1, $exception);
 		}
+
+		$this->log('Sent', $mailQueueItem, self::LOG_INFO);
+		return $return;
 	}
 
 	/**
@@ -161,15 +162,19 @@ class Mail
 	 */
 	public function queue(MailQueueItemInterface $mailQueueItem)
 	{
-		$this->queueHandler->publish($mailQueueItem);
+		$this->queueHandler->push($mailQueueItem);
 	}
 
+	/**
+	 *
+	 */
 	public function consume()
 	{
 		/** @var MailQueueItemInterface $mailQueueItem */
-		$mailQueueItem = $this->queueHandler->getNext();
-		if ($mailQueueItem->getScheduledSendingTime() && $mailQueueItem->getScheduledSendingTime() > new \DateTime()) {
-
+		while ($mailQueueItem = $this->queueHandler->pop()) {
+			if ($this->send($mailQueueItem)) {
+				$this->queueHandler->ack($mailQueueItem);
+			}
 		}
 
 	}

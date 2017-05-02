@@ -28,9 +28,4 @@ interface MailSenderInterface
 	 */
 	public function setSubject($subject);
 
-	/**
-	 * @return void
-	 */
-	public function reset();
-
 }

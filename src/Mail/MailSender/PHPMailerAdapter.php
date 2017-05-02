@@ -28,7 +28,12 @@ class PHPMailerAdapter implements MailSenderInterface
 	 */
 	public function send()
 	{
-		return $this->mailer->send();
+		$result = $this->mailer->send();
+		$this->mailer->clearAllRecipients();
+		$this->mailer->clearAddresses();
+		$this->mailer->clearAttachments();
+		$this->mailer->clearCustomHeaders();
+		return $result;
 	}
 
 	/**
@@ -53,16 +58,5 @@ class PHPMailerAdapter implements MailSenderInterface
 	public function setSubject($subject)
 	{
 		$this->mailer->Subject = $subject;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function reset()
-	{
-		$this->mailer->clearAllRecipients();
-		$this->mailer->clearAddresses();
-		$this->mailer->clearAttachments();
-		$this->mailer->clearCustomHeaders();
 	}
 }

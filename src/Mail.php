@@ -92,7 +92,6 @@ class Mail
 	{
 		$this->validateMailQueItem($mailQueueItem);
 		$message = $mailQueueItem->getMessage();
-		$this->mailer->reset();
 
 		foreach ($message->getRecipients() as $recipient) {
 			$this->mailer->addRecipient($recipient);

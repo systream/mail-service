@@ -1,5 +1,7 @@
 {
   "name": "systream/mail-service",
+  "license": "MIT",
+  "keywords": ["mail", "template", "token", "mailqueue", "mailq", "mailque"],
   "authors": [
     {
       "name": "Peter Tihanyi",

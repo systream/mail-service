@@ -27,4 +27,9 @@ interface MailQueueItemInterface
 	 * @return int
 	 */
 	public function getPriority();
+
+	/**
+	 * @return string
+	 */
+	public function getId();
 }

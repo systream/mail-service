@@ -3,6 +3,7 @@
 namespace Systream\Mail;
 
 
+use Ramsey\Uuid\Uuid;
 use Systream\Mail\Formatters\MessageFormatterInterface;
 use Systream\Mail\MailQueueItem\MailQueueItemInterface;
 use Systream\Mail\Message\MessageInterface;
@@ -25,6 +26,11 @@ class MailQueueItem implements MailQueueItemInterface
 	protected $priority = self::NORMAL_PRIORITY;
 
 	/**
+	 * @var \Ramsey\Uuid\UuidInterface
+	 */
+	protected $uuid;
+
+	/**
 	 * @var MessageInterface
 	 */
 	private $message;
@@ -43,6 +49,7 @@ class MailQueueItem implements MailQueueItemInterface
 	{
 		$this->message = $message;
 		$this->scheduledSendingTime = $scheduledSendingTime;
+		$this->uuid = Uuid::uuid4();
 	}
 
 	/**
@@ -91,5 +98,13 @@ class MailQueueItem implements MailQueueItemInterface
 	public function getPriority()
 	{
 		return $this->priority;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getId()
+	{
+		return $this->uuid;
 	}
 }

@@ -40,11 +40,15 @@ class RedisQueHandlerAdapter implements QueueHandlerInterface
 	}
 
 	/**
-	 * @return MailQueueItemInterface
+	 * @return MailQueueItemInterface|null
 	 */
 	public function pop()
 	{
-		return unserialize($this->redis->lPop($this->queueName));
+		$data = $this->redis->lPop($this->queueName);
+		if (!$data) {
+			return null;
+		}
+		return unserialize($data);
 	}
 
 	/**

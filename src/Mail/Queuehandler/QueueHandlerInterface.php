@@ -14,7 +14,7 @@ interface QueueHandlerInterface
 	public function push(MailQueueItemInterface $mailQueueItem);
 
 	/**
-	 * @return MailQueueItemInterface
+	 * @return MailQueueItemInterface|null
 	 */
 	public function pop();
 

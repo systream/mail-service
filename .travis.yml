@@ -1,4 +1,8 @@
 language: php
+before_script:
+  - gem install mailcatcher
+  - phpenv config-add travis.php.ini
+  - mailcatcher
 php:
   - '5.6'
   - '7.0'

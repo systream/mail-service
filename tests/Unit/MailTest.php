@@ -384,6 +384,55 @@ class MailTest extends TestAbstract
 
 		$mail->send($mailQueueItem);
 	}
+
+
+	/**
+	 * @test
+	 */
+
+	public function mailQueTest()
+	{
+		$PHPMailer = $this->getPHPMailer();
+		$mailer = new Mail\MailSender\PHPMailerAdapter($PHPMailer);
+		$mail = new Mail($mailer, new Mail\QueueHandler\SqliteQueHandlerAdapter());
+
+		$queCount = 10;
+
+		/** @var Mail\MailQueueItem[] $items */
+		$items = [];
+		while ($queCount--) {
+			$item = Mail\MailQueueItem\MailQueueItemFactory::make(
+				'subject ' . $queCount,
+				'hello' . $queCount,
+				'foo' . $queCount . '@bar.hu',
+				'Foo Bar ' . $queCount
+			);
+
+			$items[] = $item;
+			$mail->queue($item);
+		}
+
+		$this->assertEmpty($this->getMessages());
+
+		$mail->consume();
+
+		$messages = $this->getMessages();
+		$this->assertCount(10, $messages);
+
+		foreach ($messages as $key => $message) {
+			$this->assertEmailSenderEquals('<test@unit.test>', $message);
+			$this->assertEmailRecipientsContain('<' . $items[$key]->getMessage()->getRecipients()[0]->getEmail() . '>', $message);
+			$this->assertEmailSubjectEquals($items[$key]->getMessage()->getMailTemplate()->getSubject(), $message);
+			$this->assertEmailHtmlContains($items[$key]->getMessage()->getMailTemplate()->getTemplate(), $message);
+		}
+
+		$this->cleanMessages();
+		$mail->consume();
+
+		$this->assertEmpty($this->getMessages());
+	}
+
+
 	/**
 	 * @return \PHPMailer
 	 */

@@ -1,6 +1,7 @@
 language: php
 before_script:
-  - gem install mailcatcher
+  - gem install mime-types --version "< 3"
+  - gem install --conservative mailcatcher
   - phpenv config-add travis.php.ini
   - mailcatcher
 php:

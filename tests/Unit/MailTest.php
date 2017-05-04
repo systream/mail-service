@@ -4,6 +4,9 @@ namespace Tests\Systream\Unit;
 
 use Psr\Log\LoggerInterface;
 use Systream\Mail;
+use Systream\Mail\MailSender\MailSenderInterface;
+use Systream\Mail\QueueHandler\QueueHandlerInterface;
+use Systream\Mail\QueueHandler\SqliteQueHandlerAdapter;
 use Tests\Systream\TestAbstract;
 
 class MailTest extends TestAbstract
@@ -150,9 +153,9 @@ class MailTest extends TestAbstract
 	 */
 	public function sendFailed()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
 		$mailer->method('send')->will($this->throwException(new \phpmailerException('fooo')));
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$item = Mail\MailQueueItem\MailQueueItemFactory::make(
 			'subject',
 			'hello',
@@ -278,8 +281,8 @@ class MailTest extends TestAbstract
 	 */
 	public function log_notYetScheduled()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
 		$message = new Mail\Message($mailTemplate);
 		$message->addRecipient(new Mail\Recipient('test@mail.hu', 'foo bar'));
@@ -297,8 +300,8 @@ class MailTest extends TestAbstract
 	 */
 	public function log_recipientsNotSet()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
 		$message = new Mail\Message($mailTemplate);
 		$mailQueueItem = new Mail\MailQueueItem($message);
@@ -315,8 +318,8 @@ class MailTest extends TestAbstract
 	 */
 	public function log_messageNotSet()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('', 'subject');
 		$message = new Mail\Message($mailTemplate);
 		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
@@ -334,8 +337,8 @@ class MailTest extends TestAbstract
 	 */
 	public function log_subjectNotSet()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', '');
 		$message = new Mail\Message($mailTemplate);
 		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
@@ -352,8 +355,8 @@ class MailTest extends TestAbstract
 	 */
 	public function log_sendSuccessful()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
 		$message = new Mail\Message($mailTemplate);
 		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
@@ -371,9 +374,9 @@ class MailTest extends TestAbstract
 	 */
 	public function log_failed()
 	{
-		$mailer = $this->getMockBuilder(Mail\MailSender\MailSenderInterface::class)->getMock();
+		$mailer = $this->getMockBuilder(MailSenderInterface::class)->getMock();
 		$mailer->method('send')->will($this->throwException(new \phpmailerException('fooo')));
-		$mail = new Mail($mailer, $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock());
+		$mail = new Mail($mailer, $this->getMockBuilder(QueueHandlerInterface::class)->getMock());
 		$mailTemplate = new Mail\MailTemplate\StringMailTemplate('body', 'subject');
 		$message = new Mail\Message($mailTemplate);
 		$message->addRecipient(new Mail\Recipient('foo@bar.hu', 'name'));
@@ -394,7 +397,7 @@ class MailTest extends TestAbstract
 	{
 		$PHPMailer = $this->getPHPMailer();
 		$mailer = new Mail\MailSender\PHPMailerAdapter($PHPMailer);
-		$mail = new Mail($mailer, new Mail\QueueHandler\SqliteQueHandlerAdapter());
+		$mail = new Mail($mailer, new SqliteQueHandlerAdapter());
 
 		$queCount = 10;
 
@@ -453,7 +456,7 @@ class MailTest extends TestAbstract
 	protected function getMailer($PHPMailer)
 	{
 		$mailer = new Mail\MailSender\PHPMailerAdapter($PHPMailer);
-		$queMock = $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock();
+		$queMock = $this->getMockBuilder(QueueHandlerInterface::class)->getMock();
 		$mail = new Mail($mailer, $queMock);
 		return $mail;
 	}

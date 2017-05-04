@@ -81,7 +81,7 @@ trait LoggerTrait
 	 * @param MailQueueItemInterface $mailQueueItem
 	 * @return array
 	 */
-	private function getLogContext(MailQueueItemInterface $mailQueueItem): array
+	private function getLogContext(MailQueueItemInterface $mailQueueItem)
 	{
 		$context = array(
 			'subject' => $mailQueueItem->getMessage()->getMailTemplate()->getSubject(),

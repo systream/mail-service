@@ -450,7 +450,7 @@ class MailTest extends TestAbstract
 	 * @param $PHPMailer
 	 * @return Mail
 	 */
-	protected function getMailer($PHPMailer): Mail
+	protected function getMailer($PHPMailer)
 	{
 		$mailer = new Mail\MailSender\PHPMailerAdapter($PHPMailer);
 		$queMock = $this->getMockBuilder(Mail\QueueHandler\QueueHandlerInterface::class)->getMock();

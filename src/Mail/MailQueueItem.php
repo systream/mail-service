@@ -107,4 +107,27 @@ class MailQueueItem implements MailQueueItemInterface
 	{
 		return $this->uuid;
 	}
+
+	/**
+	 * @return array
+	 */
+	public function toArray()
+	{
+		$recipients = [];
+		foreach ($this->getMessage()->getRecipients() as $recipient) {
+			$recipients[] = [
+				'email' => $recipient->getEmail(),
+				'name' => $recipient->getName()
+			];
+		}
+
+		return [
+			'id' => $this->getId(),
+			'recipients' => $recipients,
+			'priority' => $this->getPriority(),
+			'subject' => $this->getMessage()->getMailTemplate()->getSubject(),
+			'template' => $this->getMessage()->getMailTemplate()->getTemplate(),
+			'scheduled' => $this->getScheduledSendingTime()
+		];
+	}
 }

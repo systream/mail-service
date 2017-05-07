@@ -32,4 +32,9 @@ interface MailQueueItemInterface
 	 * @return string
 	 */
 	public function getId();
+
+	/**
+	 * @return array
+	 */
+	public function toArray();
 }

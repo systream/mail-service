@@ -107,4 +107,32 @@ class SqliteQueHandlerAdapterTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	/**
+	 * @test
+	 */
+	public function getPendingMails()
+	{
+		$items = [];
+		$items[] = MailQueueItemFactory::make(
+			'subject',
+			'hello',
+			'foo@bar.hu',
+			'Foo Bar'
+		);
+
+		$items[] = MailQueueItemFactory::make(
+			'subject2',
+			'hello3',
+			'foo3@bar.hu',
+			'Foo3 Bar'
+		);
+		$handler = new SqliteQueHandlerAdapter();
+		foreach ($items as $item) {
+			$handler->push($item);
+		}
+
+		$this->assertEquals($items, $handler->getPendingMails());
+	}
+
+
 }

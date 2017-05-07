@@ -97,4 +97,20 @@ class SqliteQueHandlerAdapter implements QueueHandlerInterface
 		}
 		return 'update mail_que set priority = :prio, data = :data, timestamp = :ts where id = :dio';
 	}
+
+	/**
+	 * @return MailQueueItemInterface[]
+	 */
+	public function getPendingMails()
+	{
+		$statement = $this->pdo->prepare('select data from mail_que order by "timestamp" ASC ');
+		$statement->execute();
+		$results = [];
+		while ($result = $statement->fetch()) {
+			$results[] = unserialize($result['data']);
+		}
+		$statement->closeCursor();
+		return $results;
+	}
+
 }

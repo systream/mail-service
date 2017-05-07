@@ -401,6 +401,9 @@ class MailTest extends TestAbstract
 
 		$queCount = 10;
 
+		$mail->consume();
+		$this->cleanMessages();
+
 		/** @var Mail\MailQueueItem[] $items */
 		$items = [];
 		while ($queCount--) {

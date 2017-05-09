@@ -2,26 +2,18 @@
 
 namespace Systream\Mail\QueueHandler;
 
-
-use Systream\Mail\MailQueueItem\MailQueueItemInterface;
-
-class SqliteQueHandlerAdapter implements QueueHandlerInterface
+class SqliteQueHandlerAdapter extends PDOQueHandlerAdapter implements QueueHandlerInterface
 {
-	/**
-	 * @var \PDO
-	 */
-	protected $pdo;
-
 	/**
 	 * SqliteQueHandlerAdapter constructor.
 	 * @param string $dbFileLocation
 	 */
 	public function __construct($dbFileLocation = __DIR__ . '/../../Var/mailq.db')
 	{
-		$this->pdo = new \PDO('sqlite:' . $dbFileLocation);
-		$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		$this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
-		$this->pdo->exec('
+		$pdo = new \PDO('sqlite:' . $dbFileLocation);
+		$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		$pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+		$pdo->exec('
               CREATE TABLE IF NOT EXISTS `mail_que` (
                id VARCHAR(36) PRIMARY KEY,
               `priority` int DEFAULT 1,
@@ -30,91 +22,8 @@ class SqliteQueHandlerAdapter implements QueueHandlerInterface
             )
         ');
 
-	}
+		parent::__construct($pdo, 'mail_que');
 
-	/**
-	 * @param MailQueueItemInterface $mailQueueItem
-	 * @return void
-	 */
-	public function push(MailQueueItemInterface $mailQueueItem)
-	{
-		$statement = $this->pdo->prepare($this->getPushSqlQuery($this->getById($mailQueueItem->getId())));
-		$statement->bindValue('dio', $mailQueueItem->getId(), \PDO::PARAM_STR);
-		$statement->bindValue('prio', $mailQueueItem->getPriority(), \PDO::PARAM_INT);
-		$statement->bindValue('data', serialize($mailQueueItem), \PDO::PARAM_STR);
-		$statement->bindValue('ts', time(), \PDO::PARAM_INT);
-		$statement->execute();
-		$statement->closeCursor();
-	}
-
-	/**
-	 * @return MailQueueItemInterface|null
-	 */
-	public function pop()
-	{
-		$statement = $this->pdo->prepare('select data from mail_que order by priority DESC, timestamp ASC limit 1');
-		$statement->execute();
-		$result = $statement->fetch();
-		$statement->closeCursor();
-
-		if ($result) {
-			return unserialize($result['data']);
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param MailQueueItemInterface $mailQueueItem
-	 * @return Void
-	 */
-	public function ack(MailQueueItemInterface $mailQueueItem)
-	{
-		$statement = $this->pdo->prepare('delete from mail_que where id = :dio ');
-		$statement->bindValue('dio', $mailQueueItem->getId(), \PDO::PARAM_STR);
-		$statement->execute();
-		$statement->closeCursor();
-	}
-
-	/**
-	 * @param string $id
-	 * @return array
-	 */
-	private function getById($id)
-	{
-		$statement = $this->pdo->prepare('select * from mail_que where id = :dio limit 1');
-		$statement->bindValue('dio', $id, \PDO::PARAM_STR);
-		$statement->execute();
-		$result = $statement->fetch();
-		$statement->closeCursor();
-		return $result;
-	}
-
-	/**
-	 * @param $result
-	 * @return string
-	 */
-	private function getPushSqlQuery($result)
-	{
-		if (!$result) {
-			return 'insert into mail_que (id, priority, data, timestamp) values (:dio, :prio, :data, :ts)';
-		}
-		return 'update mail_que set priority = :prio, data = :data, timestamp = :ts where id = :dio';
-	}
-
-	/**
-	 * @return MailQueueItemInterface[]
-	 */
-	public function getPendingMails()
-	{
-		$statement = $this->pdo->prepare('select data from mail_que order by "timestamp" ASC ');
-		$statement->execute();
-		$results = [];
-		while ($result = $statement->fetch()) {
-			$results[] = unserialize($result['data']);
-		}
-		$statement->closeCursor();
-		return $results;
 	}
 
 }
